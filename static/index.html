@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GetYourGuide · Demand Forecasting</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --orange:#ff5533; --orange-soft:#fff1ee; --ink:#1d1d1f; --muted:#6b7280;
+    --bg:#f6f7f9; --card:#ffffff; --line:#ececf0; --good:#16a34a;
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+  /* ---- top bar ---- */
+  header{display:flex;align-items:center;gap:18px;padding:14px 26px;background:var(--card);
+    border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  .logo{display:flex;flex-direction:column;line-height:.86;padding:6px 9px;background:var(--ink);border-radius:7px}
+  .logo span{font-weight:800;color:var(--orange);font-size:14px;letter-spacing:-.4px}
+  .brand h1{font-size:16px;margin:0;font-weight:700}
+  .brand p{font-size:12px;margin:2px 0 0;color:var(--muted)}
+  nav{display:flex;gap:6px;margin-left:8px}
+  nav a{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px}
+  nav a:hover{background:var(--bg);color:var(--ink)}
+  nav a.active{background:var(--orange-soft);color:var(--orange)}
+  .spacer{flex:1}
+  #status{font-size:12.5px;padding:6px 12px;border-radius:20px;display:none}
+  #status.show{display:inline-block}
+  #status.err{background:#fee2e2;color:#b91c1c}
+  #status.ok{background:#dcfce7;color:#15803d}
+  #status.busy{background:#fef3c7;color:#92400e}
+  input,select,button{font:inherit;border-radius:9px;border:1px solid var(--line);
+    background:#fff;color:var(--ink);padding:8px 11px}
+  input::placeholder{color:#9ca3af}
+  button{cursor:pointer;background:var(--orange);color:#fff;font-weight:600;border:none;transition:filter .15s}
+  button:hover{filter:brightness(1.05)}
+  button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:500}
+  button.x{background:transparent;color:#9ca3af;border:none;font-size:18px;padding:0 6px;line-height:1}
+  button.x:hover{color:var(--orange)}
+  .key{width:170px}
+  /* ---- layout ---- */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:18px 26px 4px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+  .kpi .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .kpi .val{font-size:30px;font-weight:800;margin-top:6px}
+  .kpi .val small{font-size:15px;font-weight:600;color:var(--muted)}
+  .kpi.accent .val{color:var(--orange)}
+  main{display:grid;grid-template-columns:300px 1fr;gap:18px;padding:14px 26px 30px}
+  @media(max-width:920px){.kpis{grid-template-columns:repeat(2,1fr)}main{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+  .card h2{margin:0 0 14px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+    display:flex;align-items:center;gap:8px}
+  .col{display:flex;flex-direction:column;gap:18px}
+  /* ---- LOB list ---- */
+  .lob{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);
+    border-radius:12px;margin-bottom:9px;cursor:pointer;transition:.12s}
+  .lob:hover{border-color:#d8b4a8;background:#fafafa}
+  .lob.active{border-color:var(--orange);background:var(--orange-soft)}
+  .lob .nm{font-weight:700;flex:1}
+  .lob .acc{font-size:13px;font-weight:700;color:var(--good)}
+  .lob .mdl{display:block;font-size:11px;color:var(--muted);font-weight:500}
+  .empty{color:var(--muted);text-align:center;padding:26px 0;font-size:13px}
+  /* ---- forecast/compare ---- */
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .chart-wrap{position:relative;height:300px;margin-top:6px}
+  .bar-wrap{position:relative;height:360px;margin-top:6px}
+  .muted{color:var(--muted);font-size:12.5px}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+  th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
+  tr.win td{background:var(--orange-soft);font-weight:700}
+  .pill{font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-soft);padding:2px 9px;border-radius:20px}
+  details summary{cursor:pointer;color:var(--muted);font-size:12.5px;margin-top:4px}
+  code{background:#f3f4f6;padding:1px 5px;border-radius:4px}
+  .seg{font-size:11px;color:var(--muted)}
+  .mini{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:600;font-size:11px;padding:6px 9px;border-radius:7px;cursor:pointer}
+  .mini:hover{border-color:var(--orange);color:var(--orange)}
+  .mini.on{background:var(--orange);color:#fff;border-color:var(--orange)}
+  /* ---- tabs + summary ---- */
+  .tabbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:12px;padding-bottom:2px}
+  .tab{background:transparent;color:var(--muted);border:none;font-weight:600;font-size:13px;padding:8px 4px;margin-bottom:-1px;border-bottom:2px solid transparent;border-radius:0}
+  .tab:hover{color:var(--ink)}
+  .tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+  .headline{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;margin-bottom:14px}
+  .headline.up{background:#fff1ee}
+  .headline.down{background:#eef6ff}
+  .headline.flat{background:#f4f5f7}
+  .headline .big{font-size:30px;font-weight:800;line-height:1}
+  .headline.up .big{color:var(--orange)}
+  .headline.down .big{color:#2563eb}
+  .headline .lbl{font-size:13px;color:var(--muted)}
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  @media(max-width:620px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  .tile{background:var(--bg);border-radius:10px;padding:11px 12px}
+  .tile .t{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .tile .v{font-size:18px;font-weight:700;margin-top:4px}
+  .why{margin:6px 0 12px;padding-left:0;list-style:none}
+  .why li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;margin-bottom:8px;line-height:1.45}
+  .why li i{color:var(--orange);margin-top:2px}
+  .narr{font-size:14px;line-height:1.6;color:var(--ink);background:var(--bg);border-radius:10px;padding:12px 14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span>GET</span><span>YOUR</span><span>GUIDE</span></div>
+  <div class="brand"><h1>Demand Forecasting Studio</h1><p>Per-LOB time-series forecasts · 18 methods compared</p></div>
+  <nav>
+    <a href="/ui/" class="active">Forecasting</a>
+    <a href="/ui/capacity.html">Capacity plan</a>
+  </nav>
+  <div class="spacer"></div>
+  <span id="status"></span>
+  <input id="apiKey" class="key" type="password" placeholder="X-API-Key" />
+  <button id="connectBtn">Connect</button>
+</header>
+
+<section class="kpis">
+  <div class="kpi"><div class="label">LOBs tracked</div><div class="val" id="kLobs">–</div></div>
+  <div class="kpi"><div class="label">Algorithms compared</div><div class="val" id="kAlgos">–</div></div>
+  <div class="kpi accent"><div class="label">Best accuracy</div><div class="val" id="kBest">–<small>%</small></div></div>
+  <div class="kpi"><div class="label">Avg accuracy</div><div class="val" id="kAvg">–<small>%</small></div></div>
+</section>
+
+<main>
+  <!-- left column -->
+  <div class="col">
+    <div class="card">
+      <h2>Lines of Business</h2>
+      <div id="lobList"><div class="empty">Connect to load LOBs.</div></div>
+    </div>
+    <div class="card">
+      <h2>Manage</h2>
+      <div class="row">
+        <input id="csvFile" type="file" accept=".csv" style="flex:1;min-width:0" />
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label class="row" style="gap:6px;font-size:12.5px;color:var(--muted)">
+          <input id="replace" type="checkbox" checked style="width:auto" /> retrain if exists
+        </label>
+        <button id="uploadBtn" style="flex:1">Add / Train LOB</button>
+      </div>
+      <details><summary>CSV format</summary>
+        <p class="muted">Long format <code>date,lob,value</code> (daily). Each LOB needs ≥ 120 days. One file may hold several LOBs — each trains all 14 models automatically.</p>
+      </details>
+    </div>
+  </div>
+
+  <!-- right column -->
+  <div class="col">
+    <div class="card">
+      <div class="tabbar">
+        <button class="tab active" id="tabChartBtn">Forecast chart</button>
+        <button class="tab" id="tabSummaryBtn">Summary &amp; trend</button>
+        <span class="pill" id="fcLob">—</span>
+        <span class="spacer"></span>
+        <span class="seg">Horizon</span>
+        <input id="horizon" type="number" min="1" max="365" value="90" style="width:62px" />
+        <button class="mini" data-h="30">1M</button>
+        <button class="mini on" data-h="90">3M</button>
+        <button class="mini" data-h="180">6M</button>
+        <button id="forecastBtn" class="ghost">Run</button>
+        <button id="dlBtn" class="ghost" title="Download forecast for all LOBs">Download CSV</button>
+      </div>
+      <div id="paneChart">
+        <div class="muted" id="fcMeta" style="margin:0 0 4px"></div>
+        <div class="chart-wrap"><canvas id="fcChart"></canvas></div>
+      </div>
+      <div id="paneSummary" style="display:none">
+        <div id="summaryBody"><div class="empty">Select a LOB to see its forecast summary.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Model comparison — accuracy by algorithm</h2>
+      <div class="bar-wrap"><canvas id="barChart"></canvas></div>
+      <table id="scoreTable"><thead><tr>
+        <th>Model</th><th>Accuracy %</th><th>MAE</th><th>RMSE</th><th>MAPE %</th><th>R²</th>
+      </tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+</main>
+
+<script>
+const $=(id)=>document.getElementById(id);
+const ORANGE="#ff5533", GRAY="#d1d5db";
+let META={}, SELECTED=null, fcChart=null, barChart=null, TAB="chart";
+
+const headers=()=>({ "X-API-Key": $("apiKey").value.trim() });
+function status(msg,kind){const e=$("status");e.textContent=msg;e.className="show "+(kind||"");
+  if(kind==="ok")setTimeout(()=>e.className="",2200);}
+
+async function api(path,opts={}){
+  const r=await fetch(path,{...opts,headers:{...headers(),...(opts.headers||{})}});
+  const b=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(b.detail||("HTTP "+r.status));
+  return b;
+}
+
+async function connect(){
+  if(!$("apiKey").value.trim()){status("Enter an API key.","err");return;}
+  localStorage.setItem("gyg_key",$("apiKey").value.trim());
+  try{
+    status("Loading…","busy");
+    const data=await api("/metrics");
+    META=data.metrics||{};
+    renderKpis(data);
+    renderLobs();
+    const names=Object.keys(META);
+    if(names.length){select(names[0]);}
+    status("Connected","ok");
+  }catch(e){status(e.message,"err");}
+}
+
+function renderKpis(data){
+  const names=Object.keys(META);
+  const accs=names.map(n=>META[n].best_accuracy);
+  $("kLobs").textContent=names.length;
+  $("kAlgos").textContent=data.n_algorithms;
+  $("kBest").innerHTML=(accs.length?Math.max(...accs).toFixed(1):"–")+'<small>%</small>';
+  $("kAvg").innerHTML=(accs.length?(accs.reduce((a,b)=>a+b,0)/accs.length).toFixed(1):"–")+'<small>%</small>';
+}
+
+function renderLobs(){
+  const names=Object.keys(META);
+  const list=$("lobList");
+  if(!names.length){list.innerHTML='<div class="empty">No LOBs yet. Add one below.</div>';return;}
+  list.innerHTML="";
+  names.forEach(n=>{
+    const m=META[n];
+    const row=document.createElement("div");
+    row.className="lob"+(n===SELECTED?" active":"");
+    row.onclick=()=>select(n);
+    const info=document.createElement("div");info.style.flex="1";
+    const nm=document.createElement("span");nm.className="nm";nm.textContent=n;
+    const mdl=document.createElement("span");mdl.className="mdl";mdl.textContent="best: "+m.best_model;
+    info.appendChild(nm);info.appendChild(mdl);
+    const acc=document.createElement("span");acc.className="acc";acc.textContent=m.best_accuracy.toFixed(1)+"%";
+    const x=document.createElement("button");x.className="x";x.textContent="×";x.title="Remove";
+    x.onclick=(ev)=>{ev.stopPropagation();removeLob(n);};
+    row.appendChild(info);row.appendChild(acc);row.appendChild(x);
+    list.appendChild(row);
+  });
+}
+
+function select(lob){
+  SELECTED=lob;
+  $("fcLob").textContent=lob;
+  renderLobs();
+  drawComparison(lob);
+  runForecast();
+  if(TAB==="summary")renderSummary();
+}
+
+async function removeLob(lob){
+  if(!confirm(`Remove “${lob}”?`))return;
+  try{await api("/lobs/"+encodeURIComponent(lob),{method:"DELETE"});
+    delete META[lob];
+    if(SELECTED===lob)SELECTED=null;
+    status(`Removed ${lob}`,"ok");
+    const data=await api("/metrics");META=data.metrics||{};renderKpis(data);renderLobs();
+    const names=Object.keys(META);if(names.length)select(names[0]);else clearCharts();
+  }catch(e){status(e.message,"err");}
+}
+
+async function upload(){
+  const f=$("csvFile").files[0];
+  if(!f){status("Choose a CSV first.","err");return;}
+  const fd=new FormData();fd.append("file",f);
+  try{
+    status("Training 14 models…","busy");
+    const r=await api("/lobs?replace="+$("replace").checked,{method:"POST",body:fd});
+    $("csvFile").value="";
+    const data=await api("/metrics");META=data.metrics||{};renderKpis(data);renderLobs();
+    status("Added: "+(r.added.join(", ")||"(none)"),"ok");
+    if(r.added.length)select(r.added[0]);
+  }catch(e){status(e.message,"err");}
+}
+
+async function runForecast(){
+  if(!SELECTED)return;
+  const horizon=Math.max(1,Math.min(365,+$("horizon").value||30));
+  try{
+    const hist=await api(`/history/${encodeURIComponent(SELECTED)}?days=90`);
+    const fc=await api(`/forecast?horizon=${horizon}&lob=${encodeURIComponent(SELECTED)}`);
+    const f=fc.forecasts[SELECTED];
+    const labels=hist.history.map(p=>p.date).concat(f.map(p=>p.date));
+    const nH=hist.history.length;
+    const m=META[SELECTED];
+    $("fcMeta").textContent=`${m.best_model} · ${m.best_accuracy.toFixed(1)}% acc · ${m.n_observations} days history`;
+    drawForecast(labels,[
+      {label:"History",data:hist.history.map(p=>p.value).concat(Array(f.length).fill(null)),
+        borderColor:"#9ca3af",backgroundColor:"transparent",borderWidth:2,tension:.25,pointRadius:0},
+      {label:"Forecast",data:Array(nH).fill(null).concat(f.map(p=>p.forecast)),
+        borderColor:ORANGE,backgroundColor:"rgba(255,85,51,.08)",borderWidth:2.5,fill:true,borderDash:[5,3],tension:.25,pointRadius:0},
+    ]);
+  }catch(e){status(e.message,"err");}
+}
+
+async function renderSummary(){
+  if(!SELECTED){ $("summaryBody").innerHTML='<div class="empty">Select a LOB.</div>'; return; }
+  const horizon=Math.max(1,Math.min(365,+$("horizon").value||30));
+  $("summaryBody").innerHTML='<div class="empty">Analysing forecast…</div>';
+  try{
+    const s=await api(`/summary?lob=${encodeURIComponent(SELECTED)}&horizon=${horizon}`);
+    const up=s.change_pct>=0;
+    const cls=s.direction==="inflated"?"up":s.direction==="deflated"?"down":"flat";
+    const arrow=s.direction==="inflated"?"▲":s.direction==="deflated"?"▼":"►";
+    const trArrow=s.trend.direction==="rising"?"↑":s.trend.direction==="falling"?"↓":"→";
+    const fmt=n=>Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
+    $("summaryBody").innerHTML=`
+      <div class="headline ${cls}">
+        <div class="big" style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">${arrow}</span>${up?"+":""}${s.change_pct}%</div>
+        <div>
+          <div class="lbl">Forecast is <b>${s.direction}</b> vs the last ${s.horizon} days</div>
+          <div class="lbl" style="margin-top:2px">${fmt(s.forecast_mean)}/day forecast &nbsp;vs&nbsp; ${fmt(s.last_period_mean)}/day recent</div>
+        </div>
+      </div>
+      <div class="tiles">
+        <div class="tile"><div class="t">Forecast avg/day</div><div class="v">${fmt(s.forecast_mean)}</div></div>
+        <div class="tile"><div class="t">Running trend</div><div class="v">${trArrow} ${s.trend.pct_per_month>=0?"+":""}${s.trend.pct_per_month}%/mo</div></div>
+        <div class="tile"><div class="t">Peak day</div><div class="v">${fmt(s.peak_value)}</div><div class="t" style="margin-top:2px">${s.peak_date}</div></div>
+        <div class="tile"><div class="t">Low day</div><div class="v">${fmt(s.trough_value)}</div><div class="t" style="margin-top:2px">${s.trough_date}</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Why the forecast moves this way</div>
+      <ul class="why">${s.drivers.map(d=>`<li><span style="color:var(--orange)">●</span><span>${d}</span></li>`).join("")}</ul>
+      <div class="narr">${s.narrative}</div>`;
+  }catch(e){ $("summaryBody").innerHTML=`<div class="empty">${e.message}</div>`; }
+}
+
+function showTab(t){
+  TAB=t;
+  const chart=t==="chart";
+  $("paneChart").style.display=chart?"":"none";
+  $("paneSummary").style.display=chart?"none":"";
+  $("tabChartBtn").classList.toggle("active",chart);
+  $("tabSummaryBtn").classList.toggle("active",!chart);
+  if(!chart)renderSummary();
+}
+
+function drawForecast(labels,datasets){
+  if(fcChart)fcChart.destroy();
+  fcChart=new Chart($("fcChart"),{type:"line",data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+      plugins:{legend:{labels:{color:"#374151",usePointStyle:true,boxWidth:8}}},
+      scales:{x:{ticks:{color:"#9ca3af",maxTicksLimit:10},grid:{display:false}},
+        y:{ticks:{color:"#9ca3af"},grid:{color:"#f1f1f4"}}}}});
+}
+
+function drawComparison(lob){
+  const m=META[lob];if(!m)return;
+  const ranked=Object.entries(m.scores).sort((a,b)=>b[1].accuracy-a[1].accuracy);
+  const labels=ranked.map(r=>r[0]);
+  const accs=ranked.map(r=>r[1].accuracy);
+  const colors=ranked.map(r=>r[0]===m.best_model?ORANGE:GRAY);
+  if(barChart)barChart.destroy();
+  barChart=new Chart($("barChart"),{type:"bar",
+    data:{labels,datasets:[{data:accs,backgroundColor:colors,borderRadius:5,maxBarThickness:22}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>" "+c.parsed.x.toFixed(2)+"% accuracy"}}},
+      scales:{x:{min:Math.max(0,Math.min(...accs)-5),max:100,ticks:{color:"#9ca3af",callback:v=>v+"%"},grid:{color:"#f1f1f4"}},
+        y:{ticks:{color:"#374151",font:{size:11}},grid:{display:false}}}}});
+
+  const tb=$("scoreTable").querySelector("tbody");tb.innerHTML="";
+  ranked.forEach(([name,s])=>{
+    const tr=document.createElement("tr");if(name===m.best_model)tr.className="win";
+    tr.innerHTML=`<td>${name}</td><td>${s.accuracy.toFixed(2)}</td><td>${s.mae??"–"}</td>
+      <td>${s.rmse>=1e11?"–":s.rmse}</td><td>${s.mape??"–"}</td><td>${s.r2??"–"}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function clearCharts(){if(fcChart)fcChart.destroy();if(barChart)barChart.destroy();
+  $("scoreTable").querySelector("tbody").innerHTML="";$("fcLob").textContent="—";$("fcMeta").textContent="";}
+
+function downloadCSV(filename,rows){
+  const csv=rows.map(r=>r.map(c=>{const s=String(c==null?"":c);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(",")).join("\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+  a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+async function downloadForecast(){
+  const horizon=Math.max(1,Math.min(365,+$("horizon").value||90));
+  try{
+    status("Preparing CSV…","busy");
+    const fc=await api(`/forecast?horizon=${horizon}`);
+    const rows=[["date","lob","forecast"]];
+    Object.entries(fc.forecasts).forEach(([lob,arr])=>arr.forEach(p=>rows.push([p.date,lob,p.forecast])));
+    downloadCSV(`forecast_${horizon}d.csv`,rows);
+    status("Forecast downloaded","ok");
+  }catch(e){status(e.message,"err");}
+}
+
+function setHorizon(h){
+  $("horizon").value=h;
+  document.querySelectorAll('.mini').forEach(b=>b.classList.toggle('on',+b.dataset.h===h));
+  runForecast(); if(TAB==="summary")renderSummary();
+}
+
+$("connectBtn").onclick=connect;
+$("uploadBtn").onclick=upload;
+$("forecastBtn").onclick=()=>{ runForecast(); if(TAB==="summary")renderSummary(); };
+$("dlBtn").onclick=downloadForecast;
+document.querySelectorAll('.mini').forEach(b=>b.onclick=()=>setHorizon(+b.dataset.h));
+$("tabChartBtn").onclick=()=>showTab("chart");
+$("tabSummaryBtn").onclick=()=>showTab("summary");
+window.addEventListener("DOMContentLoaded",()=>{
+  const k=localStorage.getItem("gyg_key")||"dev-key-default";
+  $("apiKey").value=k;connect();
+});
+</script>
+</body>
+</html>

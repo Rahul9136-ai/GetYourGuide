@@ -1,0 +1,35 @@
+# Python environments / caches
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+*.log
+
+# Unrelated projects living in this workspace
+super-app/
+phonepe-clone/
+reel_maker/
+resume_tailor/
+
+# Generated artifacts (recreated on first run by run_local)
+data/
+models/
+*.pdf
+
+# Secrets — never commit real API keys
+config/api_keys.json
+
+# Local editor / agent config
+.claude/
+
+# Separate customer-churn project (not part of GetYourGuide)
+app.py
+Dockerfile
+src/train.py
+src/predict.py
+src/generate_data.py
+tests/test_predict.py

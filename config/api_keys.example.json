@@ -1,0 +1,10 @@
+{
+  "_comment": "Map API keys to tenant ids. Copy to api_keys.json and replace with real random keys (run `python src/auth.py` to mint one). In production prefer the LOB_API_KEYS / LOB_ADMIN_KEYS env vars instead of this file.",
+  "keys": {
+    "REPLACE_WITH_RANDOM_KEY_FOR_DEFAULT": "default",
+    "REPLACE_WITH_RANDOM_KEY_FOR_ACME": "acme"
+  },
+  "admin_keys": [
+    "REPLACE_WITH_RANDOM_ADMIN_KEY"
+  ]
+}
