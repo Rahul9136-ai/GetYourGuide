@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>GetYourGuide · Capacity Planning</title>
+<title>GetYourGuide · Workforce Budget</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root{--orange:#ff5533;--orange-soft:#fff1ee;--ink:#1d1d1f;--muted:#6b7280;--bg:#f6f7f9;
@@ -26,27 +26,25 @@
   input,select,button{font:inherit;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 11px}
   button{cursor:pointer;background:var(--orange);color:#fff;font-weight:600;border:none}
   button:hover{filter:brightness(1.05)}
+  button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
   .key{width:160px}
+  .mini{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:600;font-size:11px;padding:6px 9px;border-radius:7px;cursor:pointer}
+  .mini:hover{border-color:var(--orange);color:var(--orange)}.mini.on{background:var(--orange);color:#fff;border-color:var(--orange)}
   main{display:grid;grid-template-columns:300px 1fr;gap:18px;padding:18px 26px 30px}
   @media(max-width:920px){main{grid-template-columns:1fr}}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
   .card h2{margin:0 0 14px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 8px}
   .col{display:flex;flex-direction:column;gap:18px}
-  .field{margin-bottom:11px}
-  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  .field{margin-bottom:11px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
   .field input,.field select{width:100%}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
   @media(max-width:620px){.kpis{grid-template-columns:repeat(2,1fr)}}
   .kpi{background:var(--bg);border-radius:12px;padding:14px 16px}
   .kpi .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-  .kpi .val{font-size:26px;font-weight:800;margin-top:6px}
+  .kpi .val{font-size:24px;font-weight:800;margin-top:6px}
   .kpi.accent .val{color:var(--orange)}
-  .erlang{display:flex;gap:18px;flex-wrap:wrap;background:var(--orange-soft);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px}
-  .erlang b{font-size:18px;display:block;color:var(--ink)}
-  .mini{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:600;font-size:11px;padding:6px 9px;border-radius:7px;cursor:pointer}
-  .mini:hover{border-color:var(--orange);color:var(--orange)}
-  .mini.on{background:var(--orange);color:#fff;border-color:var(--orange)}
   .gtabs{display:inline-flex;gap:2px;background:var(--bg);border-radius:9px;padding:3px;margin:4px 0 2px}
   .gtab{background:transparent;color:var(--muted);border:none;font-weight:600;font-size:12.5px;padding:6px 14px;border-radius:7px}
   .gtab.active{background:var(--orange);color:#fff}
@@ -62,11 +60,11 @@
 <body>
 <header>
   <div class="logo"><span>GET</span><span>YOUR</span><span>GUIDE</span></div>
-  <div class="brand"><h1>Capacity Planning</h1><p>Forecast → required headcount with WFM assumptions</p></div>
+  <div class="brand"><h1>Workforce Budget</h1><p>Capacity plan → cost budget</p></div>
   <nav>
     <a href="/ui/">Forecasting</a>
-    <a href="/ui/capacity.html" class="active">Capacity plan</a>
-    <a href="/ui/budget.html">Budget</a>
+    <a href="/ui/capacity.html">Capacity plan</a>
+    <a href="/ui/budget.html" class="active">Budget</a>
   </nav>
   <div class="spacer"></div>
   <span id="status"></span>
@@ -81,84 +79,83 @@
       <div class="field"><label>Line of business</label><select id="lob"></select></div>
       <div class="field"><label>Planning horizon (days)</label><input id="horizon" type="number" min="1" max="365" value="90" /></div>
       <div style="display:flex;gap:6px;margin-top:-4px">
-        <button class="mini" data-h="30">1M</button>
-        <button class="mini on" data-h="90">3M</button>
-        <button class="mini" data-h="180">6M</button>
+        <button class="mini" data-h="30">1M</button><button class="mini on" data-h="90">3M</button><button class="mini" data-h="180">6M</button>
       </div>
     </div>
     <div class="card">
-      <h2>WFM assumptions</h2>
+      <h2>Cost assumptions</h2>
+      <div class="two">
+        <div class="field"><label>Currency</label><input id="cur" type="text" value="$" maxlength="3" /></div>
+        <div class="field"><label>Cost / agent-hour</label><input id="rate" type="number" min="0" step="0.5" value="25" /></div>
+        <div class="field"><label>Overhead (%)</label><input id="oh" type="number" min="0" max="200" value="15" /></div>
+        <div class="field"><label>Recruit / hire (per FTE)</label><input id="hire" type="number" min="0" value="0" /></div>
+      </div>
+      <div class="sub">WFM drivers (set the staffing)</div>
       <div class="two">
         <div class="field"><label>AHT (seconds)</label><input id="aht" type="number" min="1" value="300" /></div>
         <div class="field"><label>Shrinkage (%)</label><input id="shrink" type="number" min="0" max="95" value="30" /></div>
         <div class="field"><label>Max occupancy (%)</label><input id="occ" type="number" min="5" max="100" value="85" /></div>
         <div class="field"><label>Hours / FTE / day</label><input id="hpf" type="number" min="1" max="24" step="0.5" value="7.5" /></div>
-        <div class="field"><label>Operating hours/day</label><input id="ophrs" type="number" min="1" max="24" value="12" /></div>
-        <div class="field"><label>Interval (min)</label><input id="ivl" type="number" min="5" max="120" value="30" /></div>
-        <div class="field"><label>Service level (%)</label><input id="sl" type="number" min="1" max="100" value="80" /></div>
-        <div class="field"><label>Answer within (s)</label><input id="awt" type="number" min="0" value="20" /></div>
-        <div class="field"><label>Peak-interval uplift ×</label><input id="peak" type="number" min="1" max="3" step="0.05" value="1.2" /></div>
       </div>
-      <button id="buildBtn" style="width:100%;margin-top:6px">Build capacity plan</button>
-      <div class="hint">Required FTE = (volume × AHT ÷ occupancy ÷ (1−shrinkage)) ÷ hours per FTE. Erlang C sizes the busiest interval to the service-level target.</div>
+      <button id="buildBtn" style="width:100%;margin-top:6px">Build budget</button>
+      <div class="hint">Budget = rostered agent-hours × cost/hour × (1 + overhead). Hire cost is a one-off added to the recommended peak FTE.</div>
     </div>
   </div>
 
   <div class="col">
     <div class="card">
-      <h2>Capacity plan <span id="planLob" style="color:var(--orange)"></span></h2>
-      <div id="planBody"><div class="empty">Connect, pick a LOB, set assumptions, then build the plan.</div></div>
+      <h2>Workforce budget <span id="bLob" style="color:var(--orange)"></span></h2>
+      <div id="budgetBody"><div class="empty">Connect, pick a LOB, set assumptions, then build the budget.</div></div>
     </div>
   </div>
 </main>
 
 <script>
 const $=(id)=>document.getElementById(id);
-let chart=null, LASTDAILY=[], GRAN="daily";
+let chart=null, LASTDAILY=[], GRAN="monthly", SUMMARY=null;
 const headers=()=>({ "X-API-Key": $("apiKey").value.trim() });
 function status(m,k){const e=$("status");e.textContent=m;e.className="show "+(k||"");if(k==="ok")setTimeout(()=>e.className="",2200);}
 async function api(p){ const r=await fetch(p,{headers:headers()}); const b=await r.json().catch(()=>({})); if(!r.ok)throw new Error(b.detail||("HTTP "+r.status)); return b; }
+const cur=()=>$("cur").value||"$";
+const money=n=>cur()+Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
 
 async function connect(){
   if(!$("apiKey").value.trim()){status("Enter an API key.","err");return;}
   localStorage.setItem("gyg_key",$("apiKey").value.trim());
   try{
     status("Loading…","busy");
-    const d=await api("/lobs");
-    const sel=$("lob"); sel.innerHTML="";
+    const d=await api("/lobs"); const sel=$("lob"); sel.innerHTML="";
     d.lobs.forEach(l=>{const o=document.createElement("option");o.value=l;o.textContent=l;sel.appendChild(o);});
-    status("Connected","ok");
-    if(d.lobs.length) build();
+    status("Connected","ok"); if(d.lobs.length) build();
   }catch(e){status(e.message,"err");}
-}
-
-function q(){
-  return `lob=${encodeURIComponent($("lob").value)}&horizon=${+$("horizon").value||30}`
-    +`&aht_sec=${+$("aht").value}&shrinkage=${(+$("shrink").value)/100}&max_occupancy=${(+$("occ").value)/100}`
-    +`&hours_per_fte=${+$("hpf").value}&operating_hours=${+$("ophrs").value}&interval_min=${+$("ivl").value}`
-    +`&service_level=${(+$("sl").value)/100}&awt_sec=${+$("awt").value}&peak_factor=${+$("peak").value}`;
 }
 
 async function build(){
   if(!$("lob").value){status("Pick a LOB.","err");return;}
-  $("planBody").innerHTML='<div class="empty">Calculating…</div>';
+  $("budgetBody").innerHTML='<div class="empty">Calculating…</div>';
   try{
-    const r=await api(`/capacity?${q()}`);
-    $("planLob").textContent=r.lob;
-    const s=r.summary, e=s.erlang;
-    const fmt=n=>Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
-    $("planBody").innerHTML=`
+    const q=`lob=${encodeURIComponent($("lob").value)}&horizon=${+$("horizon").value||90}`
+      +`&aht_sec=${+$("aht").value}&shrinkage=${(+$("shrink").value)/100}&max_occupancy=${(+$("occ").value)/100}&hours_per_fte=${+$("hpf").value}`;
+    const r=await api(`/capacity?${q}`);
+    LASTDAILY=r.daily; SUMMARY=r.summary;
+    $("bLob").textContent=r.lob;
+    const rate=+$("rate").value, oh=1+(+$("oh").value)/100;
+    let totalCost=0,totalHours=0,totalVol=0,peakDay=0;
+    LASTDAILY.forEach(d=>{ d.cost=d.rostered_hours*rate*oh; totalCost+=d.cost; totalHours+=d.rostered_hours; totalVol+=d.volume; peakDay=Math.max(peakDay,d.cost); });
+    const hire=(+$("hire").value)*(SUMMARY.recommended_fte||0);
+    const grand=totalCost+hire;
+    const perContact=totalVol?grand/totalVol:0;
+    const annual=LASTDAILY.length?totalCost/LASTDAILY.length*365:0;
+    $("budgetBody").innerHTML=`
       <div class="kpis">
-        <div class="kpi accent"><div class="label">Recommended FTE</div><div class="val">${s.recommended_fte}</div></div>
-        <div class="kpi"><div class="label">Peak day FTE</div><div class="val">${s.peak_fte}</div></div>
-        <div class="kpi"><div class="label">Avg day FTE</div><div class="val">${s.avg_fte}</div></div>
-        <div class="kpi"><div class="label">Total agent-hours</div><div class="val">${fmt(s.total_agent_hours)}</div></div>
+        <div class="kpi accent"><div class="label">Total budget (${r.horizon}d)</div><div class="val">${money(grand)}</div></div>
+        <div class="kpi"><div class="label">Cost / contact</div><div class="val">${cur()}${perContact.toFixed(2)}</div></div>
+        <div class="kpi"><div class="label">Run-rate / year</div><div class="val">${money(annual)}</div></div>
+        <div class="kpi"><div class="label">Peak day cost</div><div class="val">${money(peakDay)}</div></div>
       </div>
-      <div class="erlang">
-        <div><span style="color:var(--muted)">Erlang C · busiest interval</span><b>${e.peak_interval_agents} agents (${e.peak_interval_fte} FTE)</b></div>
-        <div><span style="color:var(--muted)">Service level achieved</span><b>${e.achieved_service_level}%</b></div>
-        <div><span style="color:var(--muted)">Occupancy at peak</span><b>${e.occupancy}%</b></div>
-        <div><span style="color:var(--muted)">Total contacts (horizon)</span><b>${fmt(s.total_volume)}</b></div>
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">
+        ${money(totalCost)} labour${hire>0?` + ${money(hire)} one-off hiring (${SUMMARY.recommended_fte} FTE × ${money(+$("hire").value)})`:""}
+        · ${Number(totalHours).toLocaleString(undefined,{maximumFractionDigits:0})} agent-hours @ ${cur()}${rate}/h + ${(+$("oh").value)}% overhead
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div class="gtabs">
@@ -166,85 +163,72 @@ async function build(){
           <button class="gtab" data-g="weekly">Weekly</button>
           <button class="gtab" data-g="monthly">Monthly</button>
         </div>
-        <button id="dlPlan" class="ghost" style="font-size:12.5px">Download CSV</button>
+        <button id="dlBudget" class="ghost" style="font-size:12.5px">Download CSV</button>
       </div>
-      <div class="chart-wrap"><canvas id="capChart" role="img" aria-label="Required FTE and forecast volume by period"></canvas></div>
-      <div id="capTable"></div>`;
-    LASTDAILY=r.daily;
+      <div class="chart-wrap"><canvas id="budgetChart" role="img" aria-label="Budget cost and volume by period"></canvas></div>
+      <div id="budgetTable"></div>`;
     document.querySelectorAll('.gtab').forEach(b=>b.onclick=()=>renderGran(b.dataset.g));
-    document.getElementById('dlPlan').onclick=downloadPlan;
+    $("dlBudget").onclick=downloadBudget;
     renderGran(GRAN);
-  }catch(e){ $("planBody").innerHTML=`<div class="empty">${e.message}</div>`; }
+  }catch(e){ $("budgetBody").innerHTML=`<div class="empty">${e.message}</div>`; }
 }
 
 function bucketLabel(dateStr,g){
   if(g==="daily") return dateStr;
   const d=new Date(dateStr+"T00:00:00");
   if(g==="monthly") return d.toLocaleString(undefined,{year:"numeric",month:"short"});
-  const dow=(d.getDay()+6)%7, m=new Date(d); m.setDate(d.getDate()-dow);  // Monday of the week
+  const dow=(d.getDay()+6)%7, m=new Date(d); m.setDate(d.getDate()-dow);
   return "wk "+m.toISOString().slice(0,10);
 }
-
 function aggregate(daily,g){
   const map=new Map();
-  daily.forEach(d=>{
-    const key=bucketLabel(d.date,g);
-    let o=map.get(key); if(!o){o={label:key,volume:0,hours:0,ftes:[]};map.set(key,o);}
-    o.volume+=d.volume; o.hours+=d.rostered_hours; o.ftes.push(d.required_fte);
-  });
-  return [...map.values()].map(o=>({label:o.label,volume:o.volume,agentHours:o.hours,
-    avgFte:o.ftes.reduce((a,b)=>a+b,0)/o.ftes.length, peakFte:Math.max(...o.ftes)}));
+  daily.forEach(d=>{ const k=bucketLabel(d.date,g); let o=map.get(k); if(!o){o={label:k,cost:0,volume:0,hours:0,ftes:[]};map.set(k,o);}
+    o.cost+=d.cost; o.volume+=d.volume; o.hours+=d.rostered_hours; o.ftes.push(d.required_fte); });
+  return [...map.values()].map(o=>({label:o.label,cost:o.cost,volume:o.volume,agentHours:o.hours,
+    avgFte:o.ftes.reduce((a,b)=>a+b,0)/o.ftes.length}));
 }
 
 function renderGran(g){
   GRAN=g;
   document.querySelectorAll('.gtab').forEach(b=>b.classList.toggle('active',b.dataset.g===g));
   const buckets=aggregate(LASTDAILY,g);
-  const fmt=n=>Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
-  drawChart(buckets, g);
+  drawChart(buckets);
   const head=g==="daily"?"Day":g==="weekly"?"Week of":"Month";
-  const fteLabel=g==="daily"?"Required FTE":"Avg FTE";
-  $("capTable").innerHTML=`<table><thead><tr><th>${head}</th><th>Contacts</th><th>${fteLabel}</th><th>Peak FTE</th><th>Agent-hours</th></tr></thead>
-    <tbody>${buckets.map(b=>`<tr><td>${b.label.replace('wk ','')}</td><td>${fmt(b.volume)}</td><td>${b.avgFte.toFixed(1)}</td><td>${b.peakFte.toFixed(1)}</td><td>${fmt(b.agentHours)}</td></tr>`).join("")}</tbody></table>`;
+  const fmt=n=>Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
+  $("budgetTable").innerHTML=`<table><thead><tr><th>${head}</th><th>Contacts</th><th>Avg FTE</th><th>Agent-hours</th><th>Cost</th></tr></thead>
+    <tbody>${buckets.map(b=>`<tr><td>${b.label.replace('wk ','')}</td><td>${fmt(b.volume)}</td><td>${b.avgFte.toFixed(1)}</td><td>${fmt(b.agentHours)}</td><td>${money(b.cost)}</td></tr>`).join("")}</tbody></table>`;
 }
 
-function drawChart(buckets, g){
+function drawChart(buckets){
   const labels=buckets.map(b=>b.label.replace('wk ',''));
-  const fteData=buckets.map(b=>+b.avgFte.toFixed(1));
-  const fteLabel=g==="daily"?"Required FTE":"Avg required FTE";
   if(chart)chart.destroy();
-  chart=new Chart($("capChart"),{
+  chart=new Chart($("budgetChart"),{
     data:{labels,datasets:[
-      {type:"bar",label:fteLabel,data:fteData,backgroundColor:"#ff5533",borderRadius:4,yAxisID:"y",order:2},
-      {type:"line",label:"Volume",data:buckets.map(b=>b.volume),borderColor:"#9ca3af",borderWidth:2,pointRadius:0,tension:.25,yAxisID:"y1",order:1},
+      {type:"bar",label:"Cost ("+cur()+")",data:buckets.map(b=>+b.cost.toFixed(0)),backgroundColor:"#ff5533",borderRadius:4,yAxisID:"y",order:2},
+      {type:"line",label:"Contacts",data:buckets.map(b=>b.volume),borderColor:"#9ca3af",borderWidth:2,pointRadius:0,tension:.25,yAxisID:"y1",order:1},
     ]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
-      plugins:{legend:{labels:{color:"#374151",usePointStyle:true,boxWidth:8}}},
-      scales:{
-        x:{ticks:{color:"#9ca3af",maxTicksLimit:12},grid:{display:false}},
-        y:{position:"left",title:{display:true,text:"FTE",color:"#9ca3af"},ticks:{color:"#9ca3af"},grid:{color:"#f1f1f4"}},
-        y1:{position:"right",title:{display:true,text:"Volume",color:"#9ca3af"},ticks:{color:"#9ca3af"},grid:{display:false}},
-      }}});
+      plugins:{legend:{labels:{color:"#374151",usePointStyle:true,boxWidth:8}},
+        tooltip:{callbacks:{label:c=>c.dataset.type==="bar"?(" "+money(c.parsed.y)):(" "+c.parsed.y.toLocaleString()+" contacts")}}},
+      scales:{x:{ticks:{color:"#9ca3af",maxTicksLimit:12},grid:{display:false}},
+        y:{position:"left",title:{display:true,text:"Cost",color:"#9ca3af"},ticks:{color:"#9ca3af",callback:v=>cur()+(v/1000).toFixed(0)+"k"},grid:{color:"#f1f1f4"}},
+        y1:{position:"right",title:{display:true,text:"Contacts",color:"#9ca3af"},ticks:{color:"#9ca3af"},grid:{display:false}}}}});
 }
 
 function downloadCSV(filename,rows){
   const csv=rows.map(r=>r.map(c=>{const s=String(c==null?"":c);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(",")).join("\n");
-  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();
-  a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-
-function downloadPlan(){
-  if(!LASTDAILY.length){status("Build a plan first.","err");return;}
+function downloadBudget(){
+  if(!LASTDAILY.length){status("Build first.","err");return;}
   const buckets=aggregate(LASTDAILY,GRAN);
   const head=GRAN==="daily"?"date":GRAN==="weekly"?"week_of":"month";
-  const rows=[[head,"contacts","avg_fte","peak_fte","agent_hours"]];
-  buckets.forEach(b=>rows.push([b.label.replace('wk ',''),b.volume,b.avgFte.toFixed(1),b.peakFte.toFixed(1),Math.round(b.agentHours)]));
-  downloadCSV(`capacity_${$("lob").value}_${GRAN}.csv`,rows);
-  status("Plan downloaded","ok");
+  const rows=[[head,"contacts","avg_fte","agent_hours","cost_"+cur()]];
+  buckets.forEach(b=>rows.push([b.label.replace('wk ',''),b.volume,b.avgFte.toFixed(1),Math.round(b.agentHours),Math.round(b.cost)]));
+  downloadCSV(`budget_${$("lob").value}_${GRAN}.csv`,rows);
+  status("Budget downloaded","ok");
 }
-
 function setHorizon(h){ $("horizon").value=h; document.querySelectorAll('.mini').forEach(b=>b.classList.toggle('on',+b.dataset.h===h)); build(); }
 
 $("connectBtn").onclick=connect;
