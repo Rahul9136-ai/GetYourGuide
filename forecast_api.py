@@ -32,6 +32,7 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _HERE)
 sys.path.insert(0, os.path.join(_HERE, "src"))
 
+from ai_summary import generate_ai_summary  # noqa: E402
 from auth import ApiKeyAuth  # noqa: E402
 from capacity import capacity_plan  # noqa: E402
 from forecaster import ALGORITHM_NAMES  # noqa: E402
@@ -198,6 +199,48 @@ def capacity(
             "awt_sec": awt_sec, "peak_factor": peak_factor,
         },
         **plan,
+    }
+
+
+@app.get("/ai-summary")
+def ai_summary(
+    lob: str = Query(..., description="LOB to explain"),
+    horizon: int = Query(30, ge=1, le=365, description="Days ahead"),
+    tenant: str = tenant_param,
+):
+    """AI-generated narrative explanation of a LOB's forecast (Claude).
+
+    Falls back to the rule-based narrative if no Anthropic API key is configured.
+    """
+    fc = store.get(tenant)
+    if lob not in fc.lobs:
+        raise HTTPException(status_code=404, detail=f"Unknown LOB '{lob}'. Available: {fc.lobs}")
+
+    s = fc.summarize(lob, horizon)
+    m = getattr(fc, "metrics", {}).get(lob, {})
+    context = {
+        "line_of_business": lob,
+        "horizon_days": horizon,
+        "direction": s["direction"],
+        "change_vs_recent_pct": s["change_pct"],
+        "forecast_avg_per_day": s["forecast_mean"],
+        "recent_avg_per_day": s["last_period_mean"],
+        "trend": s["trend"],
+        "seasonality": s["seasonality"],
+        "peak": {"date": s["peak_date"], "value": s["peak_value"]},
+        "trough": {"date": s["trough_date"], "value": s["trough_value"]},
+        "drivers": s["drivers"],
+        "best_model": m.get("best_model"),
+        "best_model_accuracy_pct": m.get("best_accuracy"),
+    }
+
+    ai = generate_ai_summary(context)
+    return {
+        "tenant": tenant,
+        "lob": lob,
+        "horizon": horizon,
+        "ai": ai,
+        "fallback": s["narrative"],
     }
 
 
