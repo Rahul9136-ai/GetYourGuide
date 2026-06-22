@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { moduleById } from '../data/index.js'
 import Markdown from '../components/Markdown.jsx'
+import VideoEmbed from '../components/VideoEmbed.jsx'
 
 export default function Module() {
   const { id } = useParams()
@@ -79,6 +80,8 @@ export default function Module() {
                 </div>
               </div>
             )}
+
+            {lesson.video && <VideoEmbed video={lesson.video} />}
 
             <Markdown>{lesson.body}</Markdown>
 
