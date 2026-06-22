@@ -1,0 +1,8 @@
+# Install only what you need for your chosen provider.
+# Veo (default):
+google-genai>=1.0.0
+# Sora:
+openai>=1.40.0
+# Runway:
+runwayml>=3.0.0
+requests>=2.31.0

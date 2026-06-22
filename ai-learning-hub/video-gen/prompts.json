@@ -1,0 +1,39 @@
+{
+  "_comment": "One short cinematic intro clip per module. Text-to-video is great for abstract 'bumper' visuals, NOT for accurate technical detail — so these prompts are stylish, no-text intros. Keys are moduleId/lessonId and must match src/data. Edit freely.",
+
+  "python/intro": {
+    "title": "Python — Intro",
+    "aspect": "16:9",
+    "prompt": "Cinematic 8-second intro bumper: glowing lines of Python code flowing like a river of light across a dark studio, the streams weaving into a softly glowing serpent that dissolves into a constellation of connected nodes. Sleek modern tech aesthetic, deep blues and electric purple, gentle volumetric glow, smooth slow camera push-in, shallow depth of field, no text, no logos."
+  },
+  "ml/landscape": {
+    "title": "Machine Learning — Intro",
+    "aspect": "16:9",
+    "prompt": "Cinematic 8-second intro bumper: scattered glowing data points drifting in dark space gradually organizing themselves into a clean curved trend line, then clustering into distinct groups. Abstract data-visualization aesthetic, amber and teal accents on near-black, soft bokeh, elegant slow motion, smooth dolly move, no text, no charts labels."
+  },
+  "dl/what": {
+    "title": "Deep Learning — Intro",
+    "aspect": "16:9",
+    "prompt": "Cinematic 8-second intro bumper: a luminous multi-layered neural network of glowing nodes and synapses, pulses of light traveling left to right through the layers and igniting an output node. Premium sci-fi aesthetic, electric cyan and violet on deep black, particles, soft depth of field, slow orbit camera, no text."
+  },
+  "genai/llms": {
+    "title": "Generative AI — Intro",
+    "aspect": "16:9",
+    "prompt": "Cinematic 8-second intro bumper: streams of glowing word-tokens and letters swirling and assembling into a smooth flowing wave of light, suggesting language being generated. Dreamy generative aesthetic, emerald green and soft gold on dark, particle shimmer, graceful slow camera arc, no readable text, no logos."
+  },
+  "agents/what": {
+    "title": "AI Agents — Intro",
+    "aspect": "16:9",
+    "prompt": "Cinematic 8-second intro bumper: a single glowing orb of light that reaches out with beams to interact with floating tool icons (abstract glowing shapes), forming a loop of activity around itself. Sleek futuristic aesthetic, purple and cyan glow on near-black, smooth motion, soft focus, slow push-in, no text."
+  },
+  "agentic/why": {
+    "title": "Agentic AI — Intro",
+    "aspect": "16:9",
+    "prompt": "Cinematic 8-second intro bumper: one bright central orb of light delegating beams of energy to several smaller glowing orbs that work in coordination, forming an elegant connected network that pulses together. Futuristic teamwork aesthetic, teal and violet on dark, particle trails, smooth orbital camera, no text."
+  },
+  "cloud/basics": {
+    "title": "Cloud Platforms — Intro",
+    "aspect": "16:9",
+    "prompt": "Cinematic 8-second intro bumper: glowing data streams rising from a stylized city of light into a luminous cloud of interconnected server nodes floating in dark sky, energy flowing between them. Premium cloud-computing aesthetic, orange and electric blue on deep navy, volumetric light, slow majestic crane shot, no text, no brand logos."
+  }
+}

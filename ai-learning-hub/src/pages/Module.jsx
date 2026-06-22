@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { moduleById } from '../data/index.js'
+import generatedVideos from '../data/generatedVideos.js'
 import Markdown from '../components/Markdown.jsx'
 import VideoEmbed from '../components/VideoEmbed.jsx'
 
@@ -26,6 +27,11 @@ export default function Module() {
   }
 
   const lesson = mod.lessons[active]
+  // Prefer a generated AI clip if one exists for this lesson; else the curated video.
+  const genSrc = generatedVideos[`${mod.id}/${lesson.id}`]
+  const videoToShow = genSrc
+    ? { src: genSrc, title: `${lesson.title} — intro`, author: 'AI-generated' }
+    : lesson.video
   const goTo = (i) => {
     setActive(i)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -81,7 +87,7 @@ export default function Module() {
               </div>
             )}
 
-            {lesson.video && <VideoEmbed video={lesson.video} />}
+            {videoToShow && <VideoEmbed video={videoToShow} />}
 
             <Markdown>{lesson.body}</Markdown>
 

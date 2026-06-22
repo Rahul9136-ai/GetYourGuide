@@ -3,3 +3,6 @@ dist
 .DS_Store
 *.local
 .vercel
+
+# Generated AI video clips (large binaries — regenerate with video-gen/)
+public/videos/*.mp4
