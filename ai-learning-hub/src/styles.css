@@ -197,6 +197,19 @@ a { color: inherit; text-decoration: none; }
 .md th { background: var(--bg-elev); }
 .md strong { color: #fff; }
 
+/* Lesson diagrams (rendered from ```diagram blocks) */
+.md pre:has(.lesson-diagram) { background: none; border: none; padding: 0; margin: 0; }
+.lesson-diagram {
+  border: 1px solid var(--border);
+  background: radial-gradient(120% 120% at 50% 0%, rgba(124, 92, 255, 0.06), transparent 70%), var(--bg-card);
+  border-radius: 12px;
+  padding: 22px 20px 16px;
+  margin: 22px 0;
+}
+.lesson-diagram svg { overflow: visible; }
+.diagram-cap { text-align: center; font-size: 12.5px; color: var(--text-faint); margin-top: 12px; }
+.diagram-missing { color: var(--text-faint); font-size: 13px; text-align: center; font-family: ui-monospace, monospace; }
+
 .callout { border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin: 18px 0; display: flex; gap: 12px; background: var(--bg-elev); }
 .callout .ic { font-size: 18px; }
 .callout.tip { border-color: rgba(52, 211, 153, 0.3); }
