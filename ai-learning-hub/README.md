@@ -8,13 +8,13 @@ A structured, hands-on learning platform covering the full modern AI stack — b
 |---|--------|--------|------------------|
 | 1 | 🐍 Python for AI | ✅ Full | CSV Data-Quality CLI |
 | 2 | 📈 Machine Learning | ✅ Full | Customer Churn Prediction Service (FastAPI + Docker) |
-| 3 | 🧠 Deep Learning | 🚧 Scaffolded | Image Classifier + Web Demo |
+| 3 | 🧠 Deep Learning | ✅ Full | Image Classifier + Web Demo |
 | 4 | ✨ Generative AI | ✅ Full | "Chat With Your Docs" RAG Assistant |
-| 5 | 🤖 AI Agents | 🚧 Scaffolded | Research & Reporting Agent |
-| 6 | 🕸️ Agentic AI | 🚧 Scaffolded | Autonomous Content Studio |
-| 7 | ☁️ Cloud Platforms | 🚧 Scaffolded | Deploy the full stack (AWS/Azure/GCP) |
+| 5 | 🤖 AI Agents | ✅ Full | Research & Reporting Agent |
+| 6 | 🕸️ Agentic AI | ✅ Full | Autonomous Content Studio |
+| 7 | ☁️ Cloud Platforms | ✅ Full | Deploy the full stack (AWS/Azure/GCP) |
 
-Each **Full** module has 5 lessons + 1 production project written in a "read the concept, then build the real thing" format. Scaffolded modules ship with a complete curriculum outline and project brief.
+All 7 modules are complete: **42 lessons + 7 production projects**. Each lesson is written theory-first — a plain-English **"In plain English"** explanation with analogies before any code — then a buildable production project. The later projects deliberately reuse earlier ones (the ML churn API and GenAI RAG app get containerized and deployed in the Cloud module).
 
 ## Run locally
 
@@ -45,8 +45,8 @@ vercel               # follow prompts, framework auto-detected as Vite
 ```
 src/
 ├── data/            # the curriculum — one file per module
-│   ├── python.js  ml.js  genai.js     (full)
-│   ├── outlines.js                    (scaffolded modules)
+│   ├── python.js  ml.js  dl.js  genai.js
+│   ├── agents.js  agentic.js  cloud.js
 │   └── index.js                       (registry + stats)
 ├── components/      # Sidebar, Markdown renderer
 ├── pages/           # Home, Module
