@@ -16,6 +16,10 @@ export default function Home() {
 
       <div className="content">
         <section className="hero">
+          <div className="hero-badge">
+            <img src="/purvi-mark.svg" alt="Purvi Technologies" />
+            by <b>Purvi Technologies</b>
+          </div>
           <h1>
             Master AI, end to end.<br />
             From <span className="grad">Python</span> to <span className="grad">Agentic AI</span> & the Cloud.
@@ -93,7 +97,7 @@ export default function Home() {
         </div>
 
         <div className="foot">
-          AI Learning Hub · Built with React + Vite · Deployable to Vercel
+          © {new Date().getFullYear()} Purvi Technologies · AI Learning Hub · Built with React + Vite
         </div>
       </div>
     </>

@@ -3,6 +3,11 @@ dist
 .DS_Store
 *.local
 .vercel
+.claude
 
 # Generated AI video clips (large binaries — regenerate with video-gen/)
 public/videos/*.mp4
+
+# Python (video-gen)
+__pycache__/
+*.pyc

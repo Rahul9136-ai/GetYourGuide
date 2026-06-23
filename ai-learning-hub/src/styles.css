@@ -62,7 +62,13 @@ a { color: inherit; text-decoration: none; }
 }
 .brand img { width: 34px; height: 34px; border-radius: 9px; }
 .brand b { font-size: 16px; letter-spacing: -0.2px; }
+.brand-name { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .brand span { display: block; font-size: 11px; color: var(--text-faint); font-weight: 500; }
+
+/* "by Purvi Technologies" hero badge */
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 7px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-card); font-size: 12px; font-weight: 600; color: var(--text-dim); margin-bottom: 18px; }
+.hero-badge img { width: 18px; height: 18px; border-radius: 5px; }
+.hero-badge b { color: var(--text); }
 
 .nav-section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-faint); padding: 14px 10px 6px; }
 

@@ -114,7 +114,7 @@ export default function Module() {
         </div>
 
         <div className="foot">
-          AI Learning Hub · {mod.title} · Built with React + Vite
+          © {new Date().getFullYear()} Purvi Technologies · {mod.title} · AI Learning Hub
         </div>
       </div>
     </>

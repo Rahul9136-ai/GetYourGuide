@@ -8,10 +8,10 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="brand" onClick={() => nav('/')} style={{ cursor: 'pointer' }}>
-        <img src="/brain.svg" alt="logo" />
+        <img src="/purvi-mark.svg" alt="Purvi Technologies logo" />
         <div>
-          <b>AI Learning Hub</b>
-          <span>Python → Agentic AI → Cloud</span>
+          <b className="brand-name">Purvi Technologies</b>
+          <span>AI Learning Hub</span>
         </div>
       </div>
 
