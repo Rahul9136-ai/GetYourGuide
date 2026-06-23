@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: getyourguide-forecast
+    runtime: python
+    plan: free
+    # Install slim deps, then generate synthetic data + train the 18-model
+    # bundle so the app has data on first boot.
+    buildCommand: "pip install -r deploy/requirements.txt && python src/generate_timeseries.py && python src/train_forecast.py"
+    startCommand: "uvicorn forecast_api:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      # Dev keys so the dashboard's prefilled key works out of the box.
+      # Rotate these before sharing the URL publicly.
+      - key: LOB_API_KEYS
+        value: "dev-key-default:default"
+      - key: LOB_ADMIN_KEYS
+        value: "dev-admin-key"
+      # Optional: set in the Render dashboard to enable the AI summary feature.
+      - key: ANTHROPIC_API_KEY
+        sync: false
