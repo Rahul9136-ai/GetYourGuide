@@ -25,10 +25,10 @@ config/api_keys.json
 
 # Local editor / agent config
 .claude/
+_srv.*
 
 # Separate customer-churn project (not part of GetYourGuide)
 app.py
-Dockerfile
 src/train.py
 src/predict.py
 src/generate_data.py

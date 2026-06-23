@@ -6,9 +6,24 @@ venv
 .mypy_cache
 *.pyc
 .DS_Store
-data/
 *.log
+_srv.*
 node_modules
 .git
 .gitignore
+.claude
+
+# Regenerated during the build
+data/
+models/
+
+# Secrets — never bake real keys into the image
 config/api_keys.json
+
+# Unrelated projects in this workspace (not part of the image)
+ai-learning-hub/
+super-app/
+phonepe-clone/
+reel_maker/
+resume_tailor/
+*.pdf
